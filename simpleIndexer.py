@@ -7,8 +7,8 @@ import nltk
 from nltk.stem.porter import *
 from nltk.corpus import stopwords
 
-stemmer = PorterStemmer()
 # nltk.download('stopwords')
+
 
 class SimpleIndexer:
 
@@ -16,9 +16,11 @@ class SimpleIndexer:
         self.dictionary = {}
         self.pathToBaseFolder = pathToBaseFolder
         self.debug = debug
+        self.stemmer = PorterStemmer()
 
     def index(self):
 
+        # count = 0
         # traverse all files in base directory and its subdirectories
         for root, dirs, files in os.walk(self.pathToBaseFolder):
             for filename in files:
@@ -41,7 +43,9 @@ class SimpleIndexer:
 
                     self.log('\n\n\n')
 
-                break
+                # count += 1
+                # if count > 20:
+                #     break
 
         # sort dictionary values to facilitate merging of posting lists
         for token in self.dictionary:
@@ -70,7 +74,7 @@ class SimpleIndexer:
         self.log('Stemming...')
         self.log(tokens)
 
-        # remove stop words
+        # remove stop words -> after this queries containing stop words, like 'we are' (from example_queries), will fail
         self.log('Removing stop words...')
         tokens = self.remove_stop_words(tokens)
         self.log(tokens)
@@ -95,7 +99,7 @@ class SimpleIndexer:
         return tokens
 
     def stem_tokens(self, tokens):
-        tokens = [stemmer.stem(token) for token in tokens]
+        tokens = [self.stemmer.stem(token) for token in tokens]
         return tokens
 
     def remove_stop_words(self, tokens):

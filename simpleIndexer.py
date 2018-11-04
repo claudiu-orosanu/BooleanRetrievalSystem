@@ -1,6 +1,5 @@
 import os
 import collections
-import string
 
 
 class SimpleIndexer:
@@ -40,9 +39,20 @@ class SimpleIndexer:
                 # if count > 20:
                 #     break
 
-        # sort index values to facilitate merging of posting lists
+        # sort index values alphabetically
+        self.index = collections.OrderedDict(sorted(self.index.items()))
+        # sort values for every key to facilitate merging of posting lists
         for term in self.index:
             self.index[term] = sorted(self.index[term])
+
+    def add_terms_to_index(self, docId, terms):
+        for term in terms:
+
+            # if term is not in index, add it
+            if term not in self.index:
+                self.index[term] = []
+
+            self.index[term].append(docId)
 
     def write_index_to_file(self, filePath):
         with open(filePath, 'w') as file:
@@ -52,15 +62,6 @@ class SimpleIndexer:
     def log(self, *args):
         if self.debugMode:
             print(' '.join([str(e) for e in args]))
-
-    def add_terms_to_index(self, docId, terms):
-        for term in terms:
-
-            # if terms is not in index, add it
-            if term not in self.index:
-                self.index[term] = []
-
-            self.index[term].append(docId)
 
 
 

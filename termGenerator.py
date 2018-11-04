@@ -1,5 +1,3 @@
-import os
-import collections
 import string
 
 # natural language toolkit
@@ -65,6 +63,9 @@ class TermGenerator:
 
         # discard numbers
         tokens = [token for token in tokens if not all(char.isdigit() for char in token)]
+
+        # discard 's (appears in almost all documents)
+        tokens = [token for token in tokens if token != "'s"]
 
         return tokens
 

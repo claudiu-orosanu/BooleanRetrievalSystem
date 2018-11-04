@@ -1,20 +1,28 @@
 from simpleIndexer import SimpleIndexer
+from termGenerator import TermGenerator
 import listUtils
 import datetime
 
+# Uncomment this to download nltk data
+# nltk.download('punkt')
+# nltk.download('stopwords')
 
-def process_query(query, indexer):
-    tokens = indexer.generate_tokens(query)
+
+def process_query(query, index, termGenerator):
+    terms = termGenerator.generate_terms(query)
     outputFile = open('queryResult.txt', 'w')
-    if len(tokens) == 1:
+
+    if len(terms) == 1:
         print('Documents that satisfy your query:')
-        for doc in indexer.dictionary[tokens[0]]:
+        for doc in index[terms[0]]:
             print(doc)
             outputFile.write(doc + '\n')
-    elif len(tokens) > 1:
-        docs = listUtils.intersect_lists(indexer.dictionary[tokens[0]], indexer.dictionary[tokens[1]])
-        for i in range(2, len(tokens)):
-            docs = listUtils.intersect_lists(docs, indexer.dictionary[tokens[i]])
+
+    elif len(terms) > 1:
+        docs = listUtils.intersect_lists(index[terms[0]], index[terms[1]])
+        # TODO optimize this query (intersect the smallest posting lists every time)
+        for i in range(2, len(terms)):
+            docs = listUtils.intersect_lists(docs, index[terms[i]])
 
         if len(docs) == 0:
             print('No document satisfies your query')
@@ -24,20 +32,32 @@ def process_query(query, indexer):
                 print(doc)
                 outputFile.write(doc + '\n')
 
+    outputFile.close()
+
 
 if __name__ == '__main__':
     pathToBaseFolder = './real_data/0/'
 
     print('Creating index...')
-    indexer = SimpleIndexer(pathToBaseFolder, False)
+    termGenerator = TermGenerator(False)
+    indexer = SimpleIndexer(pathToBaseFolder, termGenerator, False)
 
-    print('Start time', datetime.datetime.now())
-    indexer.index()
+    startTime = datetime.datetime.now()
+    print('Start time', startTime)
 
-    indexer.writeIndexToFile('outputIndex.txt')
+    # start indexing process
+    indexer.create_index()
 
+    # write index to file
+    indexer.write_index_to_file('outputIndex.txt')
+
+    # init query TODO provide this as cmd argument
     query = 'stanford computer science'
 
-    process_query(query, indexer)
+    # process the query
+    process_query(query, indexer.index, termGenerator)
 
-    print('End time', datetime.datetime.now())
+    endTime = datetime.datetime.now()
+    print('End time', endTime)
+
+    print('It took', (endTime - startTime).total_seconds())

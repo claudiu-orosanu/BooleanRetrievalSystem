@@ -2,25 +2,18 @@ import os
 import collections
 import string
 
-# natural language toolkit
-import nltk
-from nltk.stem.porter import *
-from nltk.corpus import stopwords
-
-# nltk.download('stopwords')
-
 
 class SimpleIndexer:
 
-    def __init__(self, pathToBaseFolder, debug = False):
-        self.dictionary = {}
+    def __init__(self, pathToBaseFolder, termGenerator, debugMode=False):
+        self.index = {}
         self.pathToBaseFolder = pathToBaseFolder
-        self.debug = debug
-        self.stemmer = PorterStemmer()
+        self.debugMode = debugMode
+        self.termGenerator = termGenerator
 
-    def index(self):
+    def create_index(self):
 
-        # count = 0
+        count = 0
         # traverse all files in base directory and its subdirectories
         for root, dirs, files in os.walk(self.pathToBaseFolder):
             for filename in files:
@@ -32,14 +25,14 @@ class SimpleIndexer:
                     self.log('Original text')
                     self.log(text)
 
-                    # generate tokens
-                    tokens = self.generate_tokens(text)
+                    # generate terms
+                    terms = self.termGenerator.generate_terms(text)
 
-                    # add tokens to dictionary
-                    self.log('Adding tokens to dictionary...')
-                    self.add_tokens_to_dictionary(os.path.join(root, filename), tokens)
+                    # add terms to index
+                    self.log('Adding terms to dictionary...')
+                    self.add_terms_to_index(os.path.join(root, filename), terms)
 
-                    self.log(self.dictionary)
+                    self.log(self.index)
 
                     self.log('\n\n\n')
 
@@ -47,83 +40,27 @@ class SimpleIndexer:
                 # if count > 20:
                 #     break
 
-        # sort dictionary values to facilitate merging of posting lists
-        for token in self.dictionary:
-            self.dictionary[token] = sorted(self.dictionary[token])
+        # sort index values to facilitate merging of posting lists
+        for term in self.index:
+            self.index[term] = sorted(self.index[term])
 
-    def generate_tokens(self, text):
-        # tokenize: split string by punctuation marks also (not only spaces)
-        self.log('Tokenizing...')
-        tokens = nltk.word_tokenize(text)
-        self.log(tokens)
-
-        self.log('Processing tokens...')
-        tokens = self.process_tokens(tokens)
-        self.log('Processing tokens... Done')
-
-        return tokens
-
-    def process_tokens(self, tokens):
-        # normalize tokens
-        tokens = self.normalize_tokens(tokens)
-        self.log('Normalizing...')
-        self.log(tokens)
-
-        # stem tokens
-        tokens = self.stem_tokens(tokens)
-        self.log('Stemming...')
-        self.log(tokens)
-
-        # remove stop words -> after this queries containing stop words, like 'we are' (from example_queries), will fail
-        self.log('Removing stop words...')
-        tokens = self.remove_stop_words(tokens)
-        self.log(tokens)
-
-        # remove duplicates and sort tokens
-        self.log('Removing duplicates...')
-        tokens = list(dict.fromkeys(tokens))
-        self.log(tokens)
-
-        return tokens
-
-    def normalize_tokens(self, tokens):
-        # make all tokens lowercase
-        tokens = [token.lower() for token in tokens]
-
-        # discard punctuation marks
-        tokens = [token for token in tokens if token not in string.punctuation]
-
-        # discard numbers
-        tokens = [token for token in tokens if not all(char.isdigit() for char in token)]
-
-        return tokens
-
-    def stem_tokens(self, tokens):
-        tokens = [self.stemmer.stem(token) for token in tokens]
-        return tokens
-
-    def remove_stop_words(self, tokens):
-        stop_words = set(stopwords.words('english'))
-        tokens = [token for token in tokens if token not in stop_words]
-        return tokens
-
-    def writeIndexToFile(self, filePath):
+    def write_index_to_file(self, filePath):
         with open(filePath, 'w') as file:
-            for word, postingList in self.dictionary.items():
+            for word, postingList in self.index.items():
                 file.write(word + ':' + str(postingList) + '\n')
 
     def log(self, *args):
-        if self.debug:
+        if self.debugMode:
             print(' '.join([str(e) for e in args]))
 
-    def add_tokens_to_dictionary(self, docId, tokens):
-        for token in tokens:
+    def add_terms_to_index(self, docId, terms):
+        for term in terms:
 
-            # if token is not in dictionary, add it
-            if token not in self.dictionary:
-                self.dictionary[token] = []
+            # if terms is not in index, add it
+            if term not in self.index:
+                self.index[term] = []
 
-            self.dictionary[token].append(docId)
+            self.index[term].append(docId)
 
 
 

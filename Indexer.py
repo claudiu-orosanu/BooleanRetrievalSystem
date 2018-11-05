@@ -26,17 +26,15 @@ if __name__ == '__main__':
     # this object will generate the terms from raw text
     termGenerator = TermGenerator(debugMode)
 
-    # this object will create the index; pass True as 3rd parameter to
-    indexer = SimpleIndexer(pathToBaseFolder, termGenerator, debugMode)
+    # this object will create the index
+    chunkSize = 500000
+    indexer = SimpleIndexer(pathToBaseFolder, termGenerator, chunkSize, debugMode)
 
     startTime = datetime.datetime.now()
     print('Start time', startTime)
 
-    # start indexing
+    # create index
     indexer.create_index()
-
-    # write index to file
-    indexer.write_index_to_file(outputPath)
 
     endTime = datetime.datetime.now()
     print('End time', endTime)

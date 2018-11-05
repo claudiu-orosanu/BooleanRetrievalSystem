@@ -8,6 +8,10 @@ def process_query(query, index, termGenerator):
     terms = termGenerator.generate_terms(query)
     outputFile = open('./output/queryResult.txt', 'w')
 
+    if len(terms) == 0:
+        # this will happen when the user query contains only stop words (because stop words are discarded)
+        print('No documents satisfy your query.')
+
     if len(terms) == 1:
         print('Documents that satisfy your query:')
         for doc in index[terms[0]]:

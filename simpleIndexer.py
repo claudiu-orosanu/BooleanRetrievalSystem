@@ -54,11 +54,12 @@ class SimpleIndexer:
         if len(self.index) > 0:
             self.sort_index()
             self.write_index_chunk(chunkNumber)
+            chunkNumber += 1
 
         # merge chunks into final index
         print('--------------------Index chunks written to disk:', '--------------------')
         print('--------------------Merging index chunks into ./output/outputIndex.txt--------------------')
-        self.merge_chunks()
+        self.merge_chunks(chunkNumber)
 
     def add_terms_to_index(self, docId, terms):
         for term in terms:
@@ -88,8 +89,17 @@ class SimpleIndexer:
         if self.debugMode:
             print(' '.join([str(e) for e in args]))
 
-    def merge_chunks(self):
-        chunks = [open('./index_chunks/' + chunk) for chunk in os.listdir('./index_chunks/')]
+    def merge_chunks(self, chunkNumber):
+
+        # open files that contain index chunks
+        chunks = []
+        count = 0
+        for chunkFileName in os.listdir('./index_chunks/'):
+            chunks.append(open('./index_chunks/' + chunkFileName))
+            count += 1
+            if count == chunkNumber:
+                break
+
         finalIndexPath = './output/outputIndex.txt'
         chunksIndex = {}
         finalIndexFile = open(finalIndexPath, 'w')

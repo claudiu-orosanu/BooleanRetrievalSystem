@@ -40,6 +40,7 @@ def process_query(query, index, termGenerator):
                 outputFile.write(doc + '\n')
 
     outputFile.close()
+    print(f"\nYou can also see the query results in{outputFile.name}\n")
 
 
 def read_index_from_file(filename):

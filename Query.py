@@ -5,12 +5,16 @@ from termGenerator import TermGenerator
 
 
 def process_query(query, index, termGenerator):
+
+    # apply to query the same procedure for generating terms that we did when creating the index
     terms = termGenerator.generate_terms(query)
+
+    # output file that will contain the final query result
     outputFile = open('./output/queryResult.txt', 'w')
 
     if len(terms) == 0:
         # this will happen when the user query contains only stop words (because stop words are discarded)
-        print('No documents satisfy your query.')
+        print('No documents satisfy your query')
 
     if len(terms) == 1:
         print('Documents that satisfy your query:')
@@ -19,8 +23,11 @@ def process_query(query, index, termGenerator):
             outputFile.write(doc + '\n')
 
     elif len(terms) > 1:
+
+        # sort query terms by posting list length to optimize computation
+        terms.sort(key=lambda t: len(index[t]))
+
         docs = listUtils.intersect_lists(index[terms[0]], index[terms[1]])
-        # TODO optimize this query (intersect the smallest posting lists every time)
         for i in range(2, len(terms)):
             docs = listUtils.intersect_lists(docs, index[terms[i]])
 

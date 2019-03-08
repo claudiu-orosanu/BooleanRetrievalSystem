@@ -1,4 +1,4 @@
 .idea
 __pycache__
-/real_data
-/index_chunks/
+BooleanRetrievalSystem/real_data
+BooleanRetrievalSystem/index_chunks/
